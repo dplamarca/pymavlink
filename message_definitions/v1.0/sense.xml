@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<mavlink>
+  <!-- SENSE message definitions                                     -->
+  <!--                                                                 -->
+  <!-- email contacts:                                                 -->
+  <!--                 Sense Aeronautics                               -->
+  <!-- mavlink ID range 50000 - 50099                                  -->
+
+  <include>common.xml</include>
+  <include>ardupilotmega.xml</include>
+
+  <!-- NOTE: If the included file already contains a version tag, remove the version tag here, else uncomment to enable. -->
+  <!-- <version>6</version> -->
+
+  <enums>
+    <enum name="PIPELINE_STATE">
+      <description>Status flags for DAA Pipeline status</description>
+      <entry value="0" name="PIPELINE_STATE_OFF"/>
+      <entry value="1" name="PIPELINE_STATE_ON"/>
+    </enum>
+    <enum name="SENSE_THREAT_LEVEL">
+      <description>Threat level definition based on distance and other metrics.</description>
+      <entry name="SENSE_THREAT_NONE" value="0"/>
+      <entry name="SENSE_THREAT_DETECTED" value="1"/>
+      <entry name="SENSE_THREAT_NEAR" value="2"/>
+      <entry name="SENSE_THREAT_AVOID" value="3"/>
+    </enum>
+  </enums>
+
+  <messages>
+    <!-- Messages specifically designated for Sense-Air service -->
+    <message id="50000" name="SENSE_HEARTBEAT">
+      <description>Pipeline heartbeat with health report (updated at 1Hz)</description>
+      <field type="uint8_t" name="status" enum="PIPELINE_STATE">See the SENSE_STATE enum.</field>
+    </message>
+    <message id="50001" name="SENSE_DAA">
+      <description>Detection and Avoidance data.</description>
+      <field type="uint8_t" name="target_system">System ID</field>
+      <field type="uint8_t" name="target_component">Component ID</field>
+      <field type="uint32_t" name="frame_num">Frame number</field>
+      <field type="uint16_t" name="tracker_id">Tracker ID</field>
+      <field type="float[4]" name="bbox" units="pix">Bounding Box dimensions [top, left, height, width].</field>
+      <field type="float" name="confidence" units="%">Confidence (probability).</field>
+      <field type="float" name="target_range" units="m">Estimated distance to detected target.</field>
+      <field type="uint16_t" name="threat_level" enum="SENSE_THREAT_LEVEL">Threat level for detected object.</field>
+    </message>
+  </messages>
+</mavlink>
