@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <mavlink>
-  <!-- SENSE message definitions                                     -->
+  <!-- SENSE message definitions                                       -->
   <!--                                                                 -->
   <!-- email contacts:                                                 -->
   <!--                 Sense Aeronautics                               -->
@@ -33,8 +33,14 @@
       <description>Pipeline heartbeat with health report (updated at 1Hz)</description>
       <field type="uint8_t" name="status" enum="PIPELINE_STATE">See the SENSE_STATE enum.</field>
     </message>
-    <message id="50001" name="SENSE_DAA">
+    <message id="50001" name="SENSE_TIME">
+      <description>Time of startup/termination of Sense-Air service.</description>
+      <field type="uint64_t" name="time_unix_usec" units="us">Timestamp (UNIX epoch time).</field>
+      <field type="uint8_t" name="status" enum="PIPELINE_STATE">See the SENSE_STATE enum.</field>
+    </message>
+    <message id="50002" name="SENSE_DAA">
       <description>Detection and Avoidance data.</description>
+      <field type="uint64_t" name="time_unix_usec" units="us">Timestamp (UNIX epoch time).</field>
       <field type="uint8_t" name="target_system">System ID</field>
       <field type="uint8_t" name="target_component">Component ID</field>
       <field type="uint32_t" name="frame_num">Frame number</field>
