@@ -6510,6 +6510,8 @@ MAVLINK_MSG_ID_UNKNOWN = -2
 MAVLINK_MSG_ID_SENSE_HEARTBEAT = 50000
 MAVLINK_MSG_ID_SENSE_TIME = 50001
 MAVLINK_MSG_ID_SENSE_DAA = 50002
+MAVLINK_MSG_ID_SENSE_STATE_VECTOR = 50003
+MAVLINK_MSG_ID_SENSE_AV_MAN = 50004
 MAVLINK_MSG_ID_SYS_STATUS = 1
 MAVLINK_MSG_ID_SYSTEM_TIME = 2
 MAVLINK_MSG_ID_PING = 4
@@ -6877,23 +6879,23 @@ class MAVLink_sense_daa_message(MAVLink_message):
 
     id = MAVLINK_MSG_ID_SENSE_DAA
     name = "SENSE_DAA"
-    fieldnames = ["time_unix_usec", "target_system", "target_component", "frame_num", "tracker_id", "bbox", "confidence", "target_range", "threat_level"]
-    ordered_fieldnames = ["time_unix_usec", "frame_num", "bbox", "confidence", "target_range", "tracker_id", "threat_level", "target_system", "target_component"]
-    fieldtypes = ["uint64_t", "uint8_t", "uint8_t", "uint32_t", "uint16_t", "float", "float", "float", "uint16_t"]
+    fieldnames = ["time_unix_usec", "target_system", "target_component", "frame_num", "tracker_id", "bbox", "confidence", "target_range", "target_relative_vector", "threat_level"]
+    ordered_fieldnames = ["time_unix_usec", "frame_num", "bbox", "confidence", "target_range", "target_relative_vector", "tracker_id", "threat_level", "target_system", "target_component"]
+    fieldtypes = ["uint64_t", "uint8_t", "uint8_t", "uint32_t", "uint16_t", "float", "float", "float", "float", "uint16_t"]
     fielddisplays_by_name = {}
     fieldenums_by_name = {"threat_level": "SENSE_THREAT_LEVEL"}
-    fieldunits_by_name = {"time_unix_usec": "us", "bbox": "pix", "confidence": "%", "target_range": "m"}
-    format = "<QI4fffHHBB"
-    native_format = bytearray("<QIfffHHBB", "ascii")
-    orders = [0, 7, 8, 1, 5, 2, 3, 4, 6]
-    lengths = [1, 1, 4, 1, 1, 1, 1, 1, 1]
-    array_lengths = [0, 0, 4, 0, 0, 0, 0, 0, 0]
-    crc_extra = 128
-    unpacker = struct.Struct("<QI4fffHHBB")
+    fieldunits_by_name = {"time_unix_usec": "us", "bbox": "pix", "confidence": "%", "target_range": "m", "target_relative_vector": "m"}
+    format = "<QI4fff3fHHBB"
+    native_format = bytearray("<QIffffHHBB", "ascii")
+    orders = [0, 8, 9, 1, 6, 2, 3, 4, 5, 7]
+    lengths = [1, 1, 4, 1, 1, 3, 1, 1, 1, 1]
+    array_lengths = [0, 0, 4, 0, 0, 3, 0, 0, 0, 0]
+    crc_extra = 185
+    unpacker = struct.Struct("<QI4fff3fHHBB")
     instance_field = None
     instance_offset = -1
 
-    def __init__(self, time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, threat_level):
+    def __init__(self, time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_relative_vector, threat_level):
         MAVLink_message.__init__(self, MAVLink_sense_daa_message.id, MAVLink_sense_daa_message.name)
         self._fieldnames = MAVLink_sense_daa_message.fieldnames
         self._instance_field = MAVLink_sense_daa_message.instance_field
@@ -6906,10 +6908,93 @@ class MAVLink_sense_daa_message(MAVLink_message):
         self.bbox = bbox
         self.confidence = confidence
         self.target_range = target_range
+        self.target_relative_vector = target_relative_vector
         self.threat_level = threat_level
 
     def pack(self, mav, force_mavlink1=False):
-        return MAVLink_message.pack(self, mav, 128, struct.pack("<QI4fffHHBB", self.time_unix_usec, self.frame_num, self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], self.confidence, self.target_range, self.tracker_id, self.threat_level, self.target_system, self.target_component), force_mavlink1=force_mavlink1)
+        return MAVLink_message.pack(self, mav, 185, struct.pack("<QI4fff3fHHBB", self.time_unix_usec, self.frame_num, self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], self.confidence, self.target_range, self.target_relative_vector[0], self.target_relative_vector[1], self.target_relative_vector[2], self.tracker_id, self.threat_level, self.target_system, self.target_component), force_mavlink1=force_mavlink1)
+
+
+class MAVLink_sense_state_vector_message(MAVLink_message):
+    """
+    State vector of ownship UAS.
+    """
+
+    id = MAVLINK_MSG_ID_SENSE_STATE_VECTOR
+    name = "SENSE_STATE_VECTOR"
+    fieldnames = ["time_unix_usec", "target_system", "target_component", "longitude", "latitude", "altitude", "quaternion", "roll", "pitch", "yaw"]
+    ordered_fieldnames = ["time_unix_usec", "longitude", "latitude", "altitude", "quaternion", "roll", "pitch", "yaw", "target_system", "target_component"]
+    fieldtypes = ["uint64_t", "uint8_t", "uint8_t", "uint32_t", "uint32_t", "uint32_t", "float", "float", "float", "float"]
+    fielddisplays_by_name = {}
+    fieldenums_by_name = {}
+    fieldunits_by_name = {"time_unix_usec": "us", "longitude": "degE7", "latitude": "degE7", "altitude": "degE7", "roll": "rad", "pitch": "rad", "yaw": "rad"}
+    format = "<QIII4ffffBB"
+    native_format = bytearray("<QIIIffffBB", "ascii")
+    orders = [0, 8, 9, 1, 2, 3, 4, 5, 6, 7]
+    lengths = [1, 1, 1, 1, 4, 1, 1, 1, 1, 1]
+    array_lengths = [0, 0, 0, 0, 4, 0, 0, 0, 0, 0]
+    crc_extra = 59
+    unpacker = struct.Struct("<QIII4ffffBB")
+    instance_field = None
+    instance_offset = -1
+
+    def __init__(self, time_unix_usec, target_system, target_component, longitude, latitude, altitude, quaternion, roll, pitch, yaw):
+        MAVLink_message.__init__(self, MAVLink_sense_state_vector_message.id, MAVLink_sense_state_vector_message.name)
+        self._fieldnames = MAVLink_sense_state_vector_message.fieldnames
+        self._instance_field = MAVLink_sense_state_vector_message.instance_field
+        self._instance_offset = MAVLink_sense_state_vector_message.instance_offset
+        self.time_unix_usec = time_unix_usec
+        self.target_system = target_system
+        self.target_component = target_component
+        self.longitude = longitude
+        self.latitude = latitude
+        self.altitude = altitude
+        self.quaternion = quaternion
+        self.roll = roll
+        self.pitch = pitch
+        self.yaw = yaw
+
+    def pack(self, mav, force_mavlink1=False):
+        return MAVLink_message.pack(self, mav, 59, struct.pack("<QIII4ffffBB", self.time_unix_usec, self.longitude, self.latitude, self.altitude, self.quaternion[0], self.quaternion[1], self.quaternion[2], self.quaternion[3], self.roll, self.pitch, self.yaw, self.target_system, self.target_component), force_mavlink1=force_mavlink1)
+
+
+class MAVLink_sense_av_man_message(MAVLink_message):
+    """
+    Avoidance Maneuver trajectory data.
+    """
+
+    id = MAVLINK_MSG_ID_SENSE_AV_MAN
+    name = "SENSE_AV_MAN"
+    fieldnames = ["time_unix_usec", "target_system", "target_component", "waypoint_x", "waypoint_y", "waypoint_z"]
+    ordered_fieldnames = ["time_unix_usec", "waypoint_x", "waypoint_y", "waypoint_z", "target_system", "target_component"]
+    fieldtypes = ["uint64_t", "uint8_t", "uint8_t", "float", "float", "float"]
+    fielddisplays_by_name = {}
+    fieldenums_by_name = {}
+    fieldunits_by_name = {"time_unix_usec": "us", "waypoint_x": "degE7", "waypoint_y": "degE7", "waypoint_z": "degE7"}
+    format = "<Q5f5f5fBB"
+    native_format = bytearray("<QfffBB", "ascii")
+    orders = [0, 4, 5, 1, 2, 3]
+    lengths = [1, 5, 5, 5, 1, 1]
+    array_lengths = [0, 5, 5, 5, 0, 0]
+    crc_extra = 198
+    unpacker = struct.Struct("<Q5f5f5fBB")
+    instance_field = None
+    instance_offset = -1
+
+    def __init__(self, time_unix_usec, target_system, target_component, waypoint_x, waypoint_y, waypoint_z):
+        MAVLink_message.__init__(self, MAVLink_sense_av_man_message.id, MAVLink_sense_av_man_message.name)
+        self._fieldnames = MAVLink_sense_av_man_message.fieldnames
+        self._instance_field = MAVLink_sense_av_man_message.instance_field
+        self._instance_offset = MAVLink_sense_av_man_message.instance_offset
+        self.time_unix_usec = time_unix_usec
+        self.target_system = target_system
+        self.target_component = target_component
+        self.waypoint_x = waypoint_x
+        self.waypoint_y = waypoint_y
+        self.waypoint_z = waypoint_z
+
+    def pack(self, mav, force_mavlink1=False):
+        return MAVLink_message.pack(self, mav, 198, struct.pack("<Q5f5f5fBB", self.time_unix_usec, self.waypoint_x[0], self.waypoint_x[1], self.waypoint_x[2], self.waypoint_x[3], self.waypoint_x[4], self.waypoint_y[0], self.waypoint_y[1], self.waypoint_y[2], self.waypoint_y[3], self.waypoint_y[4], self.waypoint_z[0], self.waypoint_z[1], self.waypoint_z[2], self.waypoint_z[3], self.waypoint_z[4], self.target_system, self.target_component), force_mavlink1=force_mavlink1)
 
 
 class MAVLink_sys_status_message(MAVLink_message):
@@ -19158,6 +19243,8 @@ mavlink_map = {
     MAVLINK_MSG_ID_SENSE_HEARTBEAT: MAVLink_sense_heartbeat_message,
     MAVLINK_MSG_ID_SENSE_TIME: MAVLink_sense_time_message,
     MAVLINK_MSG_ID_SENSE_DAA: MAVLink_sense_daa_message,
+    MAVLINK_MSG_ID_SENSE_STATE_VECTOR: MAVLink_sense_state_vector_message,
+    MAVLINK_MSG_ID_SENSE_AV_MAN: MAVLink_sense_av_man_message,
     MAVLINK_MSG_ID_SYS_STATUS: MAVLink_sys_status_message,
     MAVLINK_MSG_ID_SYSTEM_TIME: MAVLink_system_time_message,
     MAVLINK_MSG_ID_PING: MAVLink_ping_message,
@@ -19921,7 +20008,7 @@ class MAVLink(object):
         """
         return self.send(self.sense_time_encode(time_unix_usec, status), force_mavlink1=force_mavlink1)
 
-    def sense_daa_encode(self, time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, threat_level):
+    def sense_daa_encode(self, time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_relative_vector, threat_level):
         """
         Detection and Avoidance data.
 
@@ -19933,12 +20020,13 @@ class MAVLink(object):
         bbox                      : Bounding Box dimensions [top, left, height, width]. [pix] (type:float)
         confidence                : Confidence (probability). [%] (type:float)
         target_range              : Estimated distance to detected target. [m] (type:float)
+        target_relative_vector        : Estimated relative vector to detected target, defined in camera axes. [m] (type:float)
         threat_level              : Threat level for detected object. (type:uint16_t, values:SENSE_THREAT_LEVEL)
 
         """
-        return MAVLink_sense_daa_message(time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, threat_level)
+        return MAVLink_sense_daa_message(time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_relative_vector, threat_level)
 
-    def sense_daa_send(self, time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, threat_level, force_mavlink1=False):
+    def sense_daa_send(self, time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_relative_vector, threat_level, force_mavlink1=False):
         """
         Detection and Avoidance data.
 
@@ -19950,10 +20038,75 @@ class MAVLink(object):
         bbox                      : Bounding Box dimensions [top, left, height, width]. [pix] (type:float)
         confidence                : Confidence (probability). [%] (type:float)
         target_range              : Estimated distance to detected target. [m] (type:float)
+        target_relative_vector        : Estimated relative vector to detected target, defined in camera axes. [m] (type:float)
         threat_level              : Threat level for detected object. (type:uint16_t, values:SENSE_THREAT_LEVEL)
 
         """
-        return self.send(self.sense_daa_encode(time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, threat_level), force_mavlink1=force_mavlink1)
+        return self.send(self.sense_daa_encode(time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_relative_vector, threat_level), force_mavlink1=force_mavlink1)
+
+    def sense_state_vector_encode(self, time_unix_usec, target_system, target_component, longitude, latitude, altitude, quaternion, roll, pitch, yaw):
+        """
+        State vector of ownship UAS.
+
+        time_unix_usec            : Timestamp (UNIX epoch time). [us] (type:uint64_t)
+        target_system             : System ID (type:uint8_t)
+        target_component          : Component ID (type:uint8_t)
+        longitude                 : Longitude [degE7] (type:uint32_t)
+        latitude                  : Geodetic Latitude [degE7] (type:uint32_t)
+        altitude                  : Ellipsoidal Altitude [degE7] (type:uint32_t)
+        quaternion                : Quaternion defining UAS orientation. (type:float)
+        roll                      : Roll attitude angle. [rad] (type:float)
+        pitch                     : Pitch attitude angle. [rad] (type:float)
+        yaw                       : Yaw attitude angle. [rad] (type:float)
+
+        """
+        return MAVLink_sense_state_vector_message(time_unix_usec, target_system, target_component, longitude, latitude, altitude, quaternion, roll, pitch, yaw)
+
+    def sense_state_vector_send(self, time_unix_usec, target_system, target_component, longitude, latitude, altitude, quaternion, roll, pitch, yaw, force_mavlink1=False):
+        """
+        State vector of ownship UAS.
+
+        time_unix_usec            : Timestamp (UNIX epoch time). [us] (type:uint64_t)
+        target_system             : System ID (type:uint8_t)
+        target_component          : Component ID (type:uint8_t)
+        longitude                 : Longitude [degE7] (type:uint32_t)
+        latitude                  : Geodetic Latitude [degE7] (type:uint32_t)
+        altitude                  : Ellipsoidal Altitude [degE7] (type:uint32_t)
+        quaternion                : Quaternion defining UAS orientation. (type:float)
+        roll                      : Roll attitude angle. [rad] (type:float)
+        pitch                     : Pitch attitude angle. [rad] (type:float)
+        yaw                       : Yaw attitude angle. [rad] (type:float)
+
+        """
+        return self.send(self.sense_state_vector_encode(time_unix_usec, target_system, target_component, longitude, latitude, altitude, quaternion, roll, pitch, yaw), force_mavlink1=force_mavlink1)
+
+    def sense_av_man_encode(self, time_unix_usec, target_system, target_component, waypoint_x, waypoint_y, waypoint_z):
+        """
+        Avoidance Maneuver trajectory data.
+
+        time_unix_usec            : Timestamp (UNIX epoch time). [us] (type:uint64_t)
+        target_system             : System ID (type:uint8_t)
+        target_component          : Component ID (type:uint8_t)
+        waypoint_x                : X-coordinate of waypoint in sphericals state type (Longitude) [degE7] (type:float)
+        waypoint_y                : Y-coordinate of waypoint in sphericals state type (Latitude) [degE7] (type:float)
+        waypoint_z                : Z-coordinate of waypoint in sphericals state type (Altitude) [degE7] (type:float)
+
+        """
+        return MAVLink_sense_av_man_message(time_unix_usec, target_system, target_component, waypoint_x, waypoint_y, waypoint_z)
+
+    def sense_av_man_send(self, time_unix_usec, target_system, target_component, waypoint_x, waypoint_y, waypoint_z, force_mavlink1=False):
+        """
+        Avoidance Maneuver trajectory data.
+
+        time_unix_usec            : Timestamp (UNIX epoch time). [us] (type:uint64_t)
+        target_system             : System ID (type:uint8_t)
+        target_component          : Component ID (type:uint8_t)
+        waypoint_x                : X-coordinate of waypoint in sphericals state type (Longitude) [degE7] (type:float)
+        waypoint_y                : Y-coordinate of waypoint in sphericals state type (Latitude) [degE7] (type:float)
+        waypoint_z                : Z-coordinate of waypoint in sphericals state type (Altitude) [degE7] (type:float)
+
+        """
+        return self.send(self.sense_av_man_encode(time_unix_usec, target_system, target_component, waypoint_x, waypoint_y, waypoint_z), force_mavlink1=force_mavlink1)
 
     def sys_status_encode(self, onboard_control_sensors_present, onboard_control_sensors_enabled, onboard_control_sensors_health, load, voltage_battery, current_battery, battery_remaining, drop_rate_comm, errors_comm, errors_count1, errors_count2, errors_count3, errors_count4, onboard_control_sensors_present_extended=0, onboard_control_sensors_enabled_extended=0, onboard_control_sensors_health_extended=0):
         """

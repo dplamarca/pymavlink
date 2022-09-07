@@ -48,7 +48,30 @@
       <field type="float[4]" name="bbox" units="pix">Bounding Box dimensions [top, left, height, width].</field>
       <field type="float" name="confidence" units="%">Confidence (probability).</field>
       <field type="float" name="target_range" units="m">Estimated distance to detected target.</field>
+      <field type="float[3]" name="target_relative_vector" units="m">Estimated relative vector to detected target, defined in camera axes.</field>
       <field type="uint16_t" name="threat_level" enum="SENSE_THREAT_LEVEL">Threat level for detected object.</field>
+    </message>
+    <message id="50003" name="SENSE_STATE_VECTOR">
+      <description>State vector of ownship UAS.</description>
+      <field type="uint64_t" name="time_unix_usec" units="us">Timestamp (UNIX epoch time).</field>
+      <field type="uint8_t" name="target_system">System ID</field>
+      <field type="uint8_t" name="target_component">Component ID</field>
+      <field type="uint32_t" name="longitude" units="degE7">Longitude</field>
+      <field type="uint32_t" name="latitude" units="degE7">Geodetic Latitude</field>
+      <field type="uint32_t" name="altitude" units="degE7">Ellipsoidal Altitude</field>
+      <field type="float[4]" name="quaternion">Quaternion defining UAS orientation.</field>
+      <field type="float" name="roll" units="rad">Roll attitude angle.</field>
+      <field type="float" name="pitch" units="rad">Pitch attitude angle.</field>
+      <field type="float" name="yaw" units="rad">Yaw attitude angle.</field>
+    </message>
+    <message id="50004" name="SENSE_AV_MAN">
+      <description>Avoidance Maneuver trajectory data.</description>
+      <field type="uint64_t" name="time_unix_usec" units="us">Timestamp (UNIX epoch time).</field>
+      <field type="uint8_t" name="target_system">System ID</field>
+      <field type="uint8_t" name="target_component">Component ID</field>
+      <field type="float[5]" name="waypoint_x" units="degE7">X-coordinate of waypoint in sphericals state type (Longitude)</field>
+      <field type="float[5]" name="waypoint_y" units="degE7">Y-coordinate of waypoint in sphericals state type (Latitude)</field>
+      <field type="float[5]" name="waypoint_z" units="degE7">Z-coordinate of waypoint in sphericals state type (Altitude)</field>
     </message>
   </messages>
 </mavlink>
