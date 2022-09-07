@@ -310,6 +310,15 @@ enums["PIPELINE_STATE"][1] = EnumEntry("PIPELINE_STATE_ON", """""")
 PIPELINE_STATE_ENUM_END = 2
 enums["PIPELINE_STATE"][2] = EnumEntry("PIPELINE_STATE_ENUM_END", """""")
 
+# MANEUVER_TYPE
+enums["MANEUVER_TYPE"] = {}
+MANEUVER_TYPE_UPWARDS = 0
+enums["MANEUVER_TYPE"][0] = EnumEntry("MANEUVER_TYPE_UPWARDS", """""")
+MANEUVER_TYPE_RIGHT_DODGE = 1
+enums["MANEUVER_TYPE"][1] = EnumEntry("MANEUVER_TYPE_RIGHT_DODGE", """""")
+MANEUVER_TYPE_ENUM_END = 2
+enums["MANEUVER_TYPE"][2] = EnumEntry("MANEUVER_TYPE_ENUM_END", """""")
+
 # SENSE_THREAT_LEVEL
 enums["SENSE_THREAT_LEVEL"] = {}
 SENSE_THREAT_NONE = 0
@@ -6509,9 +6518,10 @@ MAVLINK_MSG_ID_BAD_DATA = -1
 MAVLINK_MSG_ID_UNKNOWN = -2
 MAVLINK_MSG_ID_SENSE_HEARTBEAT = 50000
 MAVLINK_MSG_ID_SENSE_TIME = 50001
-MAVLINK_MSG_ID_SENSE_DAA = 50002
-MAVLINK_MSG_ID_SENSE_STATE_VECTOR = 50003
-MAVLINK_MSG_ID_SENSE_AV_MAN = 50004
+MAVLINK_MSG_ID_SENSE_AR = 50002
+MAVLINK_MSG_ID_SENSE_DAA = 50003
+MAVLINK_MSG_ID_SENSE_STATE_VECTOR = 50004
+MAVLINK_MSG_ID_SENSE_AV_MAN = 50005
 MAVLINK_MSG_ID_SYS_STATUS = 1
 MAVLINK_MSG_ID_SYSTEM_TIME = 2
 MAVLINK_MSG_ID_PING = 4
@@ -6870,6 +6880,42 @@ class MAVLink_sense_time_message(MAVLink_message):
 
     def pack(self, mav, force_mavlink1=False):
         return MAVLink_message.pack(self, mav, 241, struct.pack("<QB", self.time_unix_usec, self.status), force_mavlink1=force_mavlink1)
+
+
+class MAVLink_sense_ar_message(MAVLink_message):
+    """
+    Avoidance request to Remote Pilot in Loop (RPiL).
+    """
+
+    id = MAVLINK_MSG_ID_SENSE_AR
+    name = "SENSE_AR"
+    fieldnames = ["time_unix_usec", "request", "maneuver_type"]
+    ordered_fieldnames = ["time_unix_usec", "request", "maneuver_type"]
+    fieldtypes = ["uint64_t", "uint8_t", "uint8_t"]
+    fielddisplays_by_name = {}
+    fieldenums_by_name = {"maneuver_type": "MANEUVER_TYPE"}
+    fieldunits_by_name = {"time_unix_usec": "us"}
+    format = "<QBB"
+    native_format = bytearray("<QBB", "ascii")
+    orders = [0, 1, 2]
+    lengths = [1, 1, 1]
+    array_lengths = [0, 0, 0]
+    crc_extra = 224
+    unpacker = struct.Struct("<QBB")
+    instance_field = None
+    instance_offset = -1
+
+    def __init__(self, time_unix_usec, request, maneuver_type):
+        MAVLink_message.__init__(self, MAVLink_sense_ar_message.id, MAVLink_sense_ar_message.name)
+        self._fieldnames = MAVLink_sense_ar_message.fieldnames
+        self._instance_field = MAVLink_sense_ar_message.instance_field
+        self._instance_offset = MAVLink_sense_ar_message.instance_offset
+        self.time_unix_usec = time_unix_usec
+        self.request = request
+        self.maneuver_type = maneuver_type
+
+    def pack(self, mav, force_mavlink1=False):
+        return MAVLink_message.pack(self, mav, 224, struct.pack("<QBB", self.time_unix_usec, self.request, self.maneuver_type), force_mavlink1=force_mavlink1)
 
 
 class MAVLink_sense_daa_message(MAVLink_message):
@@ -19242,6 +19288,7 @@ class MAVLink_icarous_kinematic_bands_message(MAVLink_message):
 mavlink_map = {
     MAVLINK_MSG_ID_SENSE_HEARTBEAT: MAVLink_sense_heartbeat_message,
     MAVLINK_MSG_ID_SENSE_TIME: MAVLink_sense_time_message,
+    MAVLINK_MSG_ID_SENSE_AR: MAVLink_sense_ar_message,
     MAVLINK_MSG_ID_SENSE_DAA: MAVLink_sense_daa_message,
     MAVLINK_MSG_ID_SENSE_STATE_VECTOR: MAVLink_sense_state_vector_message,
     MAVLINK_MSG_ID_SENSE_AV_MAN: MAVLink_sense_av_man_message,
@@ -20007,6 +20054,28 @@ class MAVLink(object):
 
         """
         return self.send(self.sense_time_encode(time_unix_usec, status), force_mavlink1=force_mavlink1)
+
+    def sense_ar_encode(self, time_unix_usec, request, maneuver_type):
+        """
+        Avoidance request to Remote Pilot in Loop (RPiL).
+
+        time_unix_usec            : Timestamp (UNIX epoch time). [us] (type:uint64_t)
+        request                   : Request flag (type:uint8_t)
+        maneuver_type             : See the MANEUVER_TYPE enum. (type:uint8_t, values:MANEUVER_TYPE)
+
+        """
+        return MAVLink_sense_ar_message(time_unix_usec, request, maneuver_type)
+
+    def sense_ar_send(self, time_unix_usec, request, maneuver_type, force_mavlink1=False):
+        """
+        Avoidance request to Remote Pilot in Loop (RPiL).
+
+        time_unix_usec            : Timestamp (UNIX epoch time). [us] (type:uint64_t)
+        request                   : Request flag (type:uint8_t)
+        maneuver_type             : See the MANEUVER_TYPE enum. (type:uint8_t, values:MANEUVER_TYPE)
+
+        """
+        return self.send(self.sense_ar_encode(time_unix_usec, request, maneuver_type), force_mavlink1=force_mavlink1)
 
     def sense_daa_encode(self, time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_relative_vector, threat_level):
         """
