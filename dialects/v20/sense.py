@@ -310,6 +310,15 @@ enums["PIPELINE_STATE"][1] = EnumEntry("PIPELINE_STATE_ON", """""")
 PIPELINE_STATE_ENUM_END = 2
 enums["PIPELINE_STATE"][2] = EnumEntry("PIPELINE_STATE_ENUM_END", """""")
 
+# COMPONENT_STATE
+enums["COMPONENT_STATE"] = {}
+PIPELINE_STATE_OFF = 0
+enums["COMPONENT_STATE"][0] = EnumEntry("PIPELINE_STATE_OFF", """""")
+PIPELINE_STATE_ON = 1
+enums["COMPONENT_STATE"][1] = EnumEntry("PIPELINE_STATE_ON", """""")
+COMPONENT_STATE_ENUM_END = 2
+enums["COMPONENT_STATE"][2] = EnumEntry("COMPONENT_STATE_ENUM_END", """""")
+
 # MANEUVER_TYPE
 enums["MANEUVER_TYPE"] = {}
 MANEUVER_TYPE_UPWARDS = 0
@@ -321,16 +330,18 @@ enums["MANEUVER_TYPE"][2] = EnumEntry("MANEUVER_TYPE_ENUM_END", """""")
 
 # SENSE_THREAT_LEVEL
 enums["SENSE_THREAT_LEVEL"] = {}
-SENSE_THREAT_NONE = 0
-enums["SENSE_THREAT_LEVEL"][0] = EnumEntry("SENSE_THREAT_NONE", """""")
-SENSE_THREAT_DETECTED = 1
-enums["SENSE_THREAT_LEVEL"][1] = EnumEntry("SENSE_THREAT_DETECTED", """""")
-SENSE_THREAT_NEAR = 2
-enums["SENSE_THREAT_LEVEL"][2] = EnumEntry("SENSE_THREAT_NEAR", """""")
-SENSE_THREAT_AVOID = 3
-enums["SENSE_THREAT_LEVEL"][3] = EnumEntry("SENSE_THREAT_AVOID", """""")
-SENSE_THREAT_LEVEL_ENUM_END = 4
-enums["SENSE_THREAT_LEVEL"][4] = EnumEntry("SENSE_THREAT_LEVEL_ENUM_END", """""")
+SENSE_TRAFFIC_BE_AWARE = 1
+enums["SENSE_THREAT_LEVEL"][1] = EnumEntry("SENSE_TRAFFIC_BE_AWARE", """""")
+SENSE_TRAFFIC_MONITOR = 2
+enums["SENSE_THREAT_LEVEL"][2] = EnumEntry("SENSE_TRAFFIC_MONITOR", """""")
+SENSE_TRAFFIC_AVOID = 3
+enums["SENSE_THREAT_LEVEL"][3] = EnumEntry("SENSE_TRAFFIC_AVOID", """""")
+SENSE_TRAFFIC_MANEUVER_NOW = 4
+enums["SENSE_THREAT_LEVEL"][4] = EnumEntry("SENSE_TRAFFIC_MANEUVER_NOW", """""")
+SENSE_COLLISION_MANEUVER_NOW = 5
+enums["SENSE_THREAT_LEVEL"][5] = EnumEntry("SENSE_COLLISION_MANEUVER_NOW", """""")
+SENSE_THREAT_LEVEL_ENUM_END = 6
+enums["SENSE_THREAT_LEVEL"][6] = EnumEntry("SENSE_THREAT_LEVEL_ENUM_END", """""")
 
 # FIRMWARE_VERSION_TYPE
 enums["FIRMWARE_VERSION_TYPE"] = {}
@@ -6517,11 +6528,14 @@ enums["ICAROUS_FMS_STATE"][6] = EnumEntry("ICAROUS_FMS_STATE_ENUM_END", """""")
 MAVLINK_MSG_ID_BAD_DATA = -1
 MAVLINK_MSG_ID_UNKNOWN = -2
 MAVLINK_MSG_ID_SENSE_HEARTBEAT = 50000
-MAVLINK_MSG_ID_SENSE_TIME = 50001
-MAVLINK_MSG_ID_SENSE_AR = 50002
-MAVLINK_MSG_ID_SENSE_DAA = 50003
-MAVLINK_MSG_ID_SENSE_STATE_VECTOR = 50004
-MAVLINK_MSG_ID_SENSE_AV_MAN = 50005
+MAVLINK_MSG_ID_SENSE_PIPELINE_HEARTBEAT = 50001
+MAVLINK_MSG_ID_SENSE_THREADS_HEARTBEAT = 50002
+MAVLINK_MSG_ID_SENSE_TIME = 50003
+MAVLINK_MSG_ID_SENSE_AR = 50004
+MAVLINK_MSG_ID_SENSE_DAA = 50005
+MAVLINK_MSG_ID_SENSE_DAA_INTERNAL = 50006
+MAVLINK_MSG_ID_SENSE_STATE_VECTOR = 50007
+MAVLINK_MSG_ID_SENSE_AV_MAN = 50008
 MAVLINK_MSG_ID_SYS_STATUS = 1
 MAVLINK_MSG_ID_SYSTEM_TIME = 2
 MAVLINK_MSG_ID_PING = 4
@@ -6815,24 +6829,25 @@ MAVLINK_MSG_ID_ICAROUS_KINEMATIC_BANDS = 42001
 
 class MAVLink_sense_heartbeat_message(MAVLink_message):
     """
-    Pipeline heartbeat with health report (updated at 1Hz)
+    Sense Heartbeat message reporting service components' status
+    (updated at 1Hz)
     """
 
     id = MAVLINK_MSG_ID_SENSE_HEARTBEAT
     name = "SENSE_HEARTBEAT"
     fieldnames = ["status"]
     ordered_fieldnames = ["status"]
-    fieldtypes = ["uint8_t"]
+    fieldtypes = ["uint32_t"]
     fielddisplays_by_name = {}
-    fieldenums_by_name = {"status": "PIPELINE_STATE"}
+    fieldenums_by_name = {}
     fieldunits_by_name = {}
-    format = "<B"
-    native_format = bytearray("<B", "ascii")
+    format = "<I"
+    native_format = bytearray("<I", "ascii")
     orders = [0]
     lengths = [1]
     array_lengths = [0]
-    crc_extra = 176
-    unpacker = struct.Struct("<B")
+    crc_extra = 44
+    unpacker = struct.Struct("<I")
     instance_field = None
     instance_offset = -1
 
@@ -6844,7 +6859,75 @@ class MAVLink_sense_heartbeat_message(MAVLink_message):
         self.status = status
 
     def pack(self, mav, force_mavlink1=False):
-        return MAVLink_message.pack(self, mav, 176, struct.pack("<B", self.status), force_mavlink1=force_mavlink1)
+        return MAVLink_message.pack(self, mav, 44, struct.pack("<I", self.status), force_mavlink1=force_mavlink1)
+
+
+class MAVLink_sense_pipeline_heartbeat_message(MAVLink_message):
+    """
+    Pipeline heartbeat with health report (updated at 1Hz)
+    """
+
+    id = MAVLINK_MSG_ID_SENSE_PIPELINE_HEARTBEAT
+    name = "SENSE_PIPELINE_HEARTBEAT"
+    fieldnames = ["status"]
+    ordered_fieldnames = ["status"]
+    fieldtypes = ["uint8_t"]
+    fielddisplays_by_name = {}
+    fieldenums_by_name = {"status": "PIPELINE_STATE"}
+    fieldunits_by_name = {}
+    format = "<B"
+    native_format = bytearray("<B", "ascii")
+    orders = [0]
+    lengths = [1]
+    array_lengths = [0]
+    crc_extra = 34
+    unpacker = struct.Struct("<B")
+    instance_field = None
+    instance_offset = -1
+
+    def __init__(self, status):
+        MAVLink_message.__init__(self, MAVLink_sense_pipeline_heartbeat_message.id, MAVLink_sense_pipeline_heartbeat_message.name)
+        self._fieldnames = MAVLink_sense_pipeline_heartbeat_message.fieldnames
+        self._instance_field = MAVLink_sense_pipeline_heartbeat_message.instance_field
+        self._instance_offset = MAVLink_sense_pipeline_heartbeat_message.instance_offset
+        self.status = status
+
+    def pack(self, mav, force_mavlink1=False):
+        return MAVLink_message.pack(self, mav, 34, struct.pack("<B", self.status), force_mavlink1=force_mavlink1)
+
+
+class MAVLink_sense_threads_heartbeat_message(MAVLink_message):
+    """
+    Threads heartbeat with health report (updated at 1Hz)
+    """
+
+    id = MAVLINK_MSG_ID_SENSE_THREADS_HEARTBEAT
+    name = "SENSE_THREADS_HEARTBEAT"
+    fieldnames = ["status"]
+    ordered_fieldnames = ["status"]
+    fieldtypes = ["uint8_t"]
+    fielddisplays_by_name = {}
+    fieldenums_by_name = {"status": "COMPONENT_STATE"}
+    fieldunits_by_name = {}
+    format = "<8B"
+    native_format = bytearray("<B", "ascii")
+    orders = [0]
+    lengths = [8]
+    array_lengths = [8]
+    crc_extra = 239
+    unpacker = struct.Struct("<8B")
+    instance_field = None
+    instance_offset = -1
+
+    def __init__(self, status):
+        MAVLink_message.__init__(self, MAVLink_sense_threads_heartbeat_message.id, MAVLink_sense_threads_heartbeat_message.name)
+        self._fieldnames = MAVLink_sense_threads_heartbeat_message.fieldnames
+        self._instance_field = MAVLink_sense_threads_heartbeat_message.instance_field
+        self._instance_offset = MAVLink_sense_threads_heartbeat_message.instance_offset
+        self.status = status
+
+    def pack(self, mav, force_mavlink1=False):
+        return MAVLink_message.pack(self, mav, 239, struct.pack("<8B", self.status[0], self.status[1], self.status[2], self.status[3], self.status[4], self.status[5], self.status[6], self.status[7]), force_mavlink1=force_mavlink1)
 
 
 class MAVLink_sense_time_message(MAVLink_message):
@@ -6925,27 +7008,67 @@ class MAVLink_sense_daa_message(MAVLink_message):
 
     id = MAVLINK_MSG_ID_SENSE_DAA
     name = "SENSE_DAA"
-    fieldnames = ["time_unix_usec", "target_system", "target_component", "frame_num", "tracker_id", "bbox", "confidence", "target_range", "target_relative_vector", "threat_level"]
-    ordered_fieldnames = ["time_unix_usec", "frame_num", "bbox", "confidence", "target_range", "target_relative_vector", "tracker_id", "threat_level", "target_system", "target_component"]
-    fieldtypes = ["uint64_t", "uint8_t", "uint8_t", "uint32_t", "uint16_t", "float", "float", "float", "float", "uint16_t"]
+    fieldnames = ["target_id", "bearing", "bearing_confidence", "elevation", "elevation_confidence", "threat_level", "threat_level_confidence"]
+    ordered_fieldnames = ["target_id", "bearing", "elevation", "bearing_confidence", "elevation_confidence", "threat_level", "threat_level_confidence"]
+    fieldtypes = ["uint16_t", "int16_t", "uint8_t", "int16_t", "uint8_t", "uint8_t", "uint8_t"]
     fielddisplays_by_name = {}
     fieldenums_by_name = {"threat_level": "SENSE_THREAT_LEVEL"}
-    fieldunits_by_name = {"time_unix_usec": "us", "bbox": "pix", "confidence": "%", "target_range": "m", "target_relative_vector": "m"}
-    format = "<QI4fff3fHHBB"
-    native_format = bytearray("<QIffffHHBB", "ascii")
-    orders = [0, 8, 9, 1, 6, 2, 3, 4, 5, 7]
-    lengths = [1, 1, 4, 1, 1, 3, 1, 1, 1, 1]
-    array_lengths = [0, 0, 4, 0, 0, 3, 0, 0, 0, 0]
-    crc_extra = 185
-    unpacker = struct.Struct("<QI4fff3fHHBB")
+    fieldunits_by_name = {"bearing": "rad", "bearing_confidence": "%", "elevation": "rad", "elevation_confidence": "%", "threat_level_confidence": "%"}
+    format = "<HhhBBBB"
+    native_format = bytearray("<HhhBBBB", "ascii")
+    orders = [0, 1, 3, 2, 4, 5, 6]
+    lengths = [1, 1, 1, 1, 1, 1, 1]
+    array_lengths = [0, 0, 0, 0, 0, 0, 0]
+    crc_extra = 177
+    unpacker = struct.Struct("<HhhBBBB")
     instance_field = None
     instance_offset = -1
 
-    def __init__(self, time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_relative_vector, threat_level):
+    def __init__(self, target_id, bearing, bearing_confidence, elevation, elevation_confidence, threat_level, threat_level_confidence):
         MAVLink_message.__init__(self, MAVLink_sense_daa_message.id, MAVLink_sense_daa_message.name)
         self._fieldnames = MAVLink_sense_daa_message.fieldnames
         self._instance_field = MAVLink_sense_daa_message.instance_field
         self._instance_offset = MAVLink_sense_daa_message.instance_offset
+        self.target_id = target_id
+        self.bearing = bearing
+        self.bearing_confidence = bearing_confidence
+        self.elevation = elevation
+        self.elevation_confidence = elevation_confidence
+        self.threat_level = threat_level
+        self.threat_level_confidence = threat_level_confidence
+
+    def pack(self, mav, force_mavlink1=False):
+        return MAVLink_message.pack(self, mav, 177, struct.pack("<HhhBBBB", self.target_id, self.bearing, self.elevation, self.bearing_confidence, self.elevation_confidence, self.threat_level, self.threat_level_confidence), force_mavlink1=force_mavlink1)
+
+
+class MAVLink_sense_daa_internal_message(MAVLink_message):
+    """
+    Detection and Avoidance data.
+    """
+
+    id = MAVLINK_MSG_ID_SENSE_DAA_INTERNAL
+    name = "SENSE_DAA_INTERNAL"
+    fieldnames = ["time_unix_usec", "target_system", "target_component", "frame_num", "tracker_id", "bbox", "confidence", "target_range", "target_rel_position", "target_rel_velocity", "threat_level"]
+    ordered_fieldnames = ["time_unix_usec", "frame_num", "bbox", "confidence", "target_range", "target_rel_position", "target_rel_velocity", "tracker_id", "threat_level", "target_system", "target_component"]
+    fieldtypes = ["uint64_t", "uint8_t", "uint8_t", "uint32_t", "uint16_t", "float", "float", "float", "float", "float", "uint16_t"]
+    fielddisplays_by_name = {}
+    fieldenums_by_name = {"threat_level": "SENSE_THREAT_LEVEL"}
+    fieldunits_by_name = {"time_unix_usec": "us", "bbox": "pix", "confidence": "%", "target_range": "m", "target_rel_position": "m", "target_rel_velocity": "m/s"}
+    format = "<QI4fff3f3fHHBB"
+    native_format = bytearray("<QIfffffHHBB", "ascii")
+    orders = [0, 9, 10, 1, 7, 2, 3, 4, 5, 6, 8]
+    lengths = [1, 1, 4, 1, 1, 3, 3, 1, 1, 1, 1]
+    array_lengths = [0, 0, 4, 0, 0, 3, 3, 0, 0, 0, 0]
+    crc_extra = 7
+    unpacker = struct.Struct("<QI4fff3f3fHHBB")
+    instance_field = None
+    instance_offset = -1
+
+    def __init__(self, time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_rel_position, target_rel_velocity, threat_level):
+        MAVLink_message.__init__(self, MAVLink_sense_daa_internal_message.id, MAVLink_sense_daa_internal_message.name)
+        self._fieldnames = MAVLink_sense_daa_internal_message.fieldnames
+        self._instance_field = MAVLink_sense_daa_internal_message.instance_field
+        self._instance_offset = MAVLink_sense_daa_internal_message.instance_offset
         self.time_unix_usec = time_unix_usec
         self.target_system = target_system
         self.target_component = target_component
@@ -6954,11 +7077,12 @@ class MAVLink_sense_daa_message(MAVLink_message):
         self.bbox = bbox
         self.confidence = confidence
         self.target_range = target_range
-        self.target_relative_vector = target_relative_vector
+        self.target_rel_position = target_rel_position
+        self.target_rel_velocity = target_rel_velocity
         self.threat_level = threat_level
 
     def pack(self, mav, force_mavlink1=False):
-        return MAVLink_message.pack(self, mav, 185, struct.pack("<QI4fff3fHHBB", self.time_unix_usec, self.frame_num, self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], self.confidence, self.target_range, self.target_relative_vector[0], self.target_relative_vector[1], self.target_relative_vector[2], self.tracker_id, self.threat_level, self.target_system, self.target_component), force_mavlink1=force_mavlink1)
+        return MAVLink_message.pack(self, mav, 7, struct.pack("<QI4fff3f3fHHBB", self.time_unix_usec, self.frame_num, self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], self.confidence, self.target_range, self.target_rel_position[0], self.target_rel_position[1], self.target_rel_position[2], self.target_rel_velocity[0], self.target_rel_velocity[1], self.target_rel_velocity[2], self.tracker_id, self.threat_level, self.target_system, self.target_component), force_mavlink1=force_mavlink1)
 
 
 class MAVLink_sense_state_vector_message(MAVLink_message):
@@ -19287,9 +19411,12 @@ class MAVLink_icarous_kinematic_bands_message(MAVLink_message):
 
 mavlink_map = {
     MAVLINK_MSG_ID_SENSE_HEARTBEAT: MAVLink_sense_heartbeat_message,
+    MAVLINK_MSG_ID_SENSE_PIPELINE_HEARTBEAT: MAVLink_sense_pipeline_heartbeat_message,
+    MAVLINK_MSG_ID_SENSE_THREADS_HEARTBEAT: MAVLink_sense_threads_heartbeat_message,
     MAVLINK_MSG_ID_SENSE_TIME: MAVLink_sense_time_message,
     MAVLINK_MSG_ID_SENSE_AR: MAVLink_sense_ar_message,
     MAVLINK_MSG_ID_SENSE_DAA: MAVLink_sense_daa_message,
+    MAVLINK_MSG_ID_SENSE_DAA_INTERNAL: MAVLink_sense_daa_internal_message,
     MAVLINK_MSG_ID_SENSE_STATE_VECTOR: MAVLink_sense_state_vector_message,
     MAVLINK_MSG_ID_SENSE_AV_MAN: MAVLink_sense_av_man_message,
     MAVLINK_MSG_ID_SYS_STATUS: MAVLink_sys_status_message,
@@ -20019,21 +20146,59 @@ class MAVLink(object):
 
     def sense_heartbeat_encode(self, status):
         """
-        Pipeline heartbeat with health report (updated at 1Hz)
+        Sense Heartbeat message reporting service components' status (updated
+        at 1Hz)
 
-        status                    : See the SENSE_STATE enum. (type:uint8_t, values:PIPELINE_STATE)
+        status                    : See Sense-ICD DAA status packet. (type:uint32_t)
 
         """
         return MAVLink_sense_heartbeat_message(status)
 
     def sense_heartbeat_send(self, status, force_mavlink1=False):
         """
+        Sense Heartbeat message reporting service components' status (updated
+        at 1Hz)
+
+        status                    : See Sense-ICD DAA status packet. (type:uint32_t)
+
+        """
+        return self.send(self.sense_heartbeat_encode(status), force_mavlink1=force_mavlink1)
+
+    def sense_pipeline_heartbeat_encode(self, status):
+        """
         Pipeline heartbeat with health report (updated at 1Hz)
 
         status                    : See the SENSE_STATE enum. (type:uint8_t, values:PIPELINE_STATE)
 
         """
-        return self.send(self.sense_heartbeat_encode(status), force_mavlink1=force_mavlink1)
+        return MAVLink_sense_pipeline_heartbeat_message(status)
+
+    def sense_pipeline_heartbeat_send(self, status, force_mavlink1=False):
+        """
+        Pipeline heartbeat with health report (updated at 1Hz)
+
+        status                    : See the SENSE_STATE enum. (type:uint8_t, values:PIPELINE_STATE)
+
+        """
+        return self.send(self.sense_pipeline_heartbeat_encode(status), force_mavlink1=force_mavlink1)
+
+    def sense_threads_heartbeat_encode(self, status):
+        """
+        Threads heartbeat with health report (updated at 1Hz)
+
+        status                    : Array defining each thread status. (type:uint8_t, values:COMPONENT_STATE)
+
+        """
+        return MAVLink_sense_threads_heartbeat_message(status)
+
+    def sense_threads_heartbeat_send(self, status, force_mavlink1=False):
+        """
+        Threads heartbeat with health report (updated at 1Hz)
+
+        status                    : Array defining each thread status. (type:uint8_t, values:COMPONENT_STATE)
+
+        """
+        return self.send(self.sense_threads_heartbeat_encode(status), force_mavlink1=force_mavlink1)
 
     def sense_time_encode(self, time_unix_usec, status):
         """
@@ -20077,7 +20242,37 @@ class MAVLink(object):
         """
         return self.send(self.sense_ar_encode(time_unix_usec, request, maneuver_type), force_mavlink1=force_mavlink1)
 
-    def sense_daa_encode(self, time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_relative_vector, threat_level):
+    def sense_daa_encode(self, target_id, bearing, bearing_confidence, elevation, elevation_confidence, threat_level, threat_level_confidence):
+        """
+        Detection and Avoidance data.
+
+        target_id                 : ID of detected object. (type:uint16_t)
+        bearing                   : Bearing of detected object in body reference system. [rad] (type:int16_t)
+        bearing_confidence        : Bearing confidence level on estimated value. [%] (type:uint8_t)
+        elevation                 : Elevation of detected object in body reference system. [rad] (type:int16_t)
+        elevation_confidence        : Elevation confidence level on estimated value. [%] (type:uint8_t)
+        threat_level              : Threat level for detected object. (type:uint8_t, values:SENSE_THREAT_LEVEL)
+        threat_level_confidence        : Confidence on estimated threat level recommendation. [%] (type:uint8_t)
+
+        """
+        return MAVLink_sense_daa_message(target_id, bearing, bearing_confidence, elevation, elevation_confidence, threat_level, threat_level_confidence)
+
+    def sense_daa_send(self, target_id, bearing, bearing_confidence, elevation, elevation_confidence, threat_level, threat_level_confidence, force_mavlink1=False):
+        """
+        Detection and Avoidance data.
+
+        target_id                 : ID of detected object. (type:uint16_t)
+        bearing                   : Bearing of detected object in body reference system. [rad] (type:int16_t)
+        bearing_confidence        : Bearing confidence level on estimated value. [%] (type:uint8_t)
+        elevation                 : Elevation of detected object in body reference system. [rad] (type:int16_t)
+        elevation_confidence        : Elevation confidence level on estimated value. [%] (type:uint8_t)
+        threat_level              : Threat level for detected object. (type:uint8_t, values:SENSE_THREAT_LEVEL)
+        threat_level_confidence        : Confidence on estimated threat level recommendation. [%] (type:uint8_t)
+
+        """
+        return self.send(self.sense_daa_encode(target_id, bearing, bearing_confidence, elevation, elevation_confidence, threat_level, threat_level_confidence), force_mavlink1=force_mavlink1)
+
+    def sense_daa_internal_encode(self, time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_rel_position, target_rel_velocity, threat_level):
         """
         Detection and Avoidance data.
 
@@ -20089,13 +20284,14 @@ class MAVLink(object):
         bbox                      : Bounding Box dimensions [top, left, height, width]. [pix] (type:float)
         confidence                : Confidence (probability). [%] (type:float)
         target_range              : Estimated distance to detected target. [m] (type:float)
-        target_relative_vector        : Estimated relative vector to detected target, defined in camera axes. [m] (type:float)
+        target_rel_position        : Estimated relative position vector of detected target, defined in camera axes. [m] (type:float)
+        target_rel_velocity        : Estimated relative velocity vector of detected target, defined in camera axes. [m/s] (type:float)
         threat_level              : Threat level for detected object. (type:uint16_t, values:SENSE_THREAT_LEVEL)
 
         """
-        return MAVLink_sense_daa_message(time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_relative_vector, threat_level)
+        return MAVLink_sense_daa_internal_message(time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_rel_position, target_rel_velocity, threat_level)
 
-    def sense_daa_send(self, time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_relative_vector, threat_level, force_mavlink1=False):
+    def sense_daa_internal_send(self, time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_rel_position, target_rel_velocity, threat_level, force_mavlink1=False):
         """
         Detection and Avoidance data.
 
@@ -20107,11 +20303,12 @@ class MAVLink(object):
         bbox                      : Bounding Box dimensions [top, left, height, width]. [pix] (type:float)
         confidence                : Confidence (probability). [%] (type:float)
         target_range              : Estimated distance to detected target. [m] (type:float)
-        target_relative_vector        : Estimated relative vector to detected target, defined in camera axes. [m] (type:float)
+        target_rel_position        : Estimated relative position vector of detected target, defined in camera axes. [m] (type:float)
+        target_rel_velocity        : Estimated relative velocity vector of detected target, defined in camera axes. [m/s] (type:float)
         threat_level              : Threat level for detected object. (type:uint16_t, values:SENSE_THREAT_LEVEL)
 
         """
-        return self.send(self.sense_daa_encode(time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_relative_vector, threat_level), force_mavlink1=force_mavlink1)
+        return self.send(self.sense_daa_internal_encode(time_unix_usec, target_system, target_component, frame_num, tracker_id, bbox, confidence, target_range, target_rel_position, target_rel_velocity, threat_level), force_mavlink1=force_mavlink1)
 
     def sense_state_vector_encode(self, time_unix_usec, target_system, target_component, longitude, latitude, altitude, quaternion, roll, pitch, yaw):
         """

@@ -18,38 +18,63 @@
       <entry value="0" name="PIPELINE_STATE_OFF"/>
       <entry value="1" name="PIPELINE_STATE_ON"/>
     </enum>
+    <enum name="COMPONENT_STATE">
+      <description>Status flags for Sense-Air components.</description>
+      <entry value="0" name="PIPELINE_STATE_OFF"/>
+      <entry value="1" name="PIPELINE_STATE_ON"/>
+    </enum>
     <enum name="MANEUVER_TYPE">
       <description>Type of avoidance maneuver</description>
       <entry value="0" name="MANEUVER_TYPE_UPWARDS"/>
       <entry value="1" name="MANEUVER_TYPE_RIGHT_DODGE"/>
     </enum>
     <enum name="SENSE_THREAT_LEVEL">
-      <description>Threat level definition based on distance and other metrics.</description>
-      <entry name="SENSE_THREAT_NONE" value="0"/>
-      <entry name="SENSE_THREAT_DETECTED" value="1"/>
-      <entry name="SENSE_THREAT_NEAR" value="2"/>
-      <entry name="SENSE_THREAT_AVOID" value="3"/>
+      <description>DAA recommendation based on risk levels following published standards.
+        (FAA, ED-258, D0-365, ASTM, Eurocae).</description>
+      <entry name="SENSE_TRAFFIC_BE_AWARE" value="1"/>
+      <entry name="SENSE_TRAFFIC_MONITOR" value="2"/>
+      <entry name="SENSE_TRAFFIC_AVOID" value="3"/>
+      <entry name="SENSE_TRAFFIC_MANEUVER_NOW" value="4"/>
+      <entry name="SENSE_COLLISION_MANEUVER_NOW" value="5"/>
     </enum>
   </enums>
 
   <messages>
     <!-- Messages specifically designated for Sense-Air service -->
     <message id="50000" name="SENSE_HEARTBEAT">
+      <description>Sense Heartbeat message reporting service components' status (updated at 1Hz)</description>
+      <field type="uint32_t" name="status">See Sense-ICD DAA status packet.</field>
+    </message>
+    <message id="50001" name="SENSE_PIPELINE_HEARTBEAT">
       <description>Pipeline heartbeat with health report (updated at 1Hz)</description>
       <field type="uint8_t" name="status" enum="PIPELINE_STATE">See the SENSE_STATE enum.</field>
     </message>
-    <message id="50001" name="SENSE_TIME">
+    <message id="50002" name="SENSE_THREADS_HEARTBEAT">
+      <description>Threads heartbeat with health report (updated at 1Hz)</description>
+      <field type="uint8_t[8]" name="status" enum="COMPONENT_STATE">Array defining each thread status.</field>
+    </message>
+    <message id="50003" name="SENSE_TIME">
       <description>Time of startup/termination of Sense-Air service.</description>
       <field type="uint64_t" name="time_unix_usec" units="us">Timestamp (UNIX epoch time).</field>
       <field type="uint8_t" name="status" enum="PIPELINE_STATE">See the SENSE_STATE enum.</field>
     </message>
-    <message id="50002" name="SENSE_AR">
+    <message id="50004" name="SENSE_AR">
       <description>Avoidance request to Remote Pilot in Loop (RPiL).</description>
       <field type="uint64_t" name="time_unix_usec" units="us">Timestamp (UNIX epoch time).</field>
       <field type="uint8_t" name="request">Request flag</field>
       <field type="uint8_t" name="maneuver_type" enum="MANEUVER_TYPE">See the MANEUVER_TYPE enum.</field>
     </message>
-    <message id="50003" name="SENSE_DAA">
+    <message id="50005" name="SENSE_DAA">
+      <description>Detection and Avoidance data.</description>
+      <field type="uint16_t" name="target_id">ID of detected object.</field>
+      <field type="int16_t" name="bearing" units="rad">Bearing of detected object in body reference system.</field>
+      <field type="uint8_t" name="bearing_confidence" units="%">Bearing confidence level on estimated value.</field>
+      <field type="int16_t" name="elevation" units="rad">Elevation of detected object in body reference system.</field>
+      <field type="uint8_t" name="elevation_confidence" units="%">Elevation confidence level on estimated value.</field>
+      <field type="uint8_t" name="threat_level" enum="SENSE_THREAT_LEVEL">Threat level for detected object.</field>
+      <field type="uint8_t" name="threat_level_confidence" units="%">Confidence on estimated threat level recommendation.</field>
+    </message>
+    <message id="50006" name="SENSE_DAA_INTERNAL">
       <description>Detection and Avoidance data.</description>
       <field type="uint64_t" name="time_unix_usec" units="us">Timestamp (UNIX epoch time).</field>
       <field type="uint8_t" name="target_system">System ID</field>
@@ -59,10 +84,11 @@
       <field type="float[4]" name="bbox" units="pix">Bounding Box dimensions [top, left, height, width].</field>
       <field type="float" name="confidence" units="%">Confidence (probability).</field>
       <field type="float" name="target_range" units="m">Estimated distance to detected target.</field>
-      <field type="float[3]" name="target_relative_vector" units="m">Estimated relative vector to detected target, defined in camera axes.</field>
+      <field type="float[3]" name="target_rel_position" units="m">Estimated relative position vector of detected target, defined in camera axes.</field>
+      <field type="float[3]" name="target_rel_velocity" units="m/s">Estimated relative velocity vector of detected target, defined in camera axes.</field>
       <field type="uint16_t" name="threat_level" enum="SENSE_THREAT_LEVEL">Threat level for detected object.</field>
     </message>
-    <message id="50004" name="SENSE_STATE_VECTOR">
+    <message id="50007" name="SENSE_STATE_VECTOR">
       <description>State vector of ownship UAS.</description>
       <field type="uint64_t" name="time_unix_usec" units="us">Timestamp (UNIX epoch time).</field>
       <field type="uint8_t" name="target_system">System ID</field>
@@ -75,7 +101,7 @@
       <field type="float" name="pitch" units="rad">Pitch attitude angle.</field>
       <field type="float" name="yaw" units="rad">Yaw attitude angle.</field>
     </message>
-    <message id="50005" name="SENSE_AV_MAN">
+    <message id="50008" name="SENSE_AV_MAN">
       <description>Avoidance Maneuver trajectory data.</description>
       <field type="uint64_t" name="time_unix_usec" units="us">Timestamp (UNIX epoch time).</field>
       <field type="uint8_t" name="target_system">System ID</field>
