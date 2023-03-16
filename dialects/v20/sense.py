@@ -301,6 +301,21 @@ class EnumEntry(object):
 
 enums = {}
 
+# RAW_STATUS_MODULE
+enums["RAW_STATUS_MODULE"] = {}
+STATUS_UNKNOWN = 0
+enums["RAW_STATUS_MODULE"][0] = EnumEntry("STATUS_UNKNOWN", """""")
+STATUS_OFFLINE = 1
+enums["RAW_STATUS_MODULE"][1] = EnumEntry("STATUS_OFFLINE", """""")
+STATUS_DONE = 2
+enums["RAW_STATUS_MODULE"][2] = EnumEntry("STATUS_DONE", """""")
+STATUS_RUNNING_BLOCKED = 3
+enums["RAW_STATUS_MODULE"][3] = EnumEntry("STATUS_RUNNING_BLOCKED", """""")
+STATUS_RUNNING = 4
+enums["RAW_STATUS_MODULE"][4] = EnumEntry("STATUS_RUNNING", """""")
+RAW_STATUS_MODULE_ENUM_END = 5
+enums["RAW_STATUS_MODULE"][5] = EnumEntry("RAW_STATUS_MODULE_ENUM_END", """""")
+
 # PIPELINE_STATE
 enums["PIPELINE_STATE"] = {}
 PIPELINE_STATE_OFF = 0
@@ -6530,12 +6545,14 @@ MAVLINK_MSG_ID_UNKNOWN = -2
 MAVLINK_MSG_ID_SENSE_HEARTBEAT = 50000
 MAVLINK_MSG_ID_SENSE_PIPELINE_HEARTBEAT = 50001
 MAVLINK_MSG_ID_SENSE_THREADS_HEARTBEAT = 50002
-MAVLINK_MSG_ID_SENSE_TIME = 50003
-MAVLINK_MSG_ID_SENSE_AR = 50004
-MAVLINK_MSG_ID_SENSE_DAA = 50005
-MAVLINK_MSG_ID_SENSE_DAA_INTERNAL = 50006
-MAVLINK_MSG_ID_SENSE_STATE_VECTOR = 50007
-MAVLINK_MSG_ID_SENSE_AV_MAN = 50008
+MAVLINK_MSG_ID_SENSE_CAMERA_STATE = 50003
+MAVLINK_MSG_ID_SENSE_AIR_STATE = 50004
+MAVLINK_MSG_ID_SENSE_TIME = 50005
+MAVLINK_MSG_ID_SENSE_AR = 50006
+MAVLINK_MSG_ID_SENSE_DAA = 50007
+MAVLINK_MSG_ID_SENSE_DAA_INTERNAL = 50008
+MAVLINK_MSG_ID_SENSE_STATE_VECTOR = 50009
+MAVLINK_MSG_ID_SENSE_AV_MAN = 50010
 MAVLINK_MSG_ID_SYS_STATUS = 1
 MAVLINK_MSG_ID_SYSTEM_TIME = 2
 MAVLINK_MSG_ID_PING = 4
@@ -6830,7 +6847,7 @@ MAVLINK_MSG_ID_ICAROUS_KINEMATIC_BANDS = 42001
 class MAVLink_sense_heartbeat_message(MAVLink_message):
     """
     Sense Heartbeat message reporting service components' status
-    (updated at 1Hz)
+    (updated at 1Hz).
     """
 
     id = MAVLINK_MSG_ID_SENSE_HEARTBEAT
@@ -6864,7 +6881,7 @@ class MAVLink_sense_heartbeat_message(MAVLink_message):
 
 class MAVLink_sense_pipeline_heartbeat_message(MAVLink_message):
     """
-    Pipeline heartbeat with health report (updated at 1Hz)
+    Pipeline heartbeat with health report (updated at 1Hz).
     """
 
     id = MAVLINK_MSG_ID_SENSE_PIPELINE_HEARTBEAT
@@ -6898,7 +6915,7 @@ class MAVLink_sense_pipeline_heartbeat_message(MAVLink_message):
 
 class MAVLink_sense_threads_heartbeat_message(MAVLink_message):
     """
-    Threads heartbeat with health report (updated at 1Hz)
+    Threads heartbeat with health report (updated at 1Hz).
     """
 
     id = MAVLINK_MSG_ID_SENSE_THREADS_HEARTBEAT
@@ -6928,6 +6945,78 @@ class MAVLink_sense_threads_heartbeat_message(MAVLink_message):
 
     def pack(self, mav, force_mavlink1=False):
         return MAVLink_message.pack(self, mav, 239, struct.pack("<8B", self.status[0], self.status[1], self.status[2], self.status[3], self.status[4], self.status[5], self.status[6], self.status[7]), force_mavlink1=force_mavlink1)
+
+
+class MAVLink_sense_camera_state_message(MAVLink_message):
+    """
+    State of Sense's running services (updated at 1Hz).
+    """
+
+    id = MAVLINK_MSG_ID_SENSE_CAMERA_STATE
+    name = "SENSE_CAMERA_STATE"
+    fieldnames = ["raw_status", "raw_threads", "processed_status"]
+    ordered_fieldnames = ["raw_status", "raw_threads", "processed_status"]
+    fieldtypes = ["uint8_t", "uint8_t", "uint8_t"]
+    fielddisplays_by_name = {}
+    fieldenums_by_name = {"raw_status": "RAW_STATUS_MODULE", "raw_threads": "RAW_STATUS_MODULE", "processed_status": "RAW_STATUS_MODULE"}
+    fieldunits_by_name = {}
+    format = "<B8BB"
+    native_format = bytearray("<BBB", "ascii")
+    orders = [0, 1, 2]
+    lengths = [1, 8, 1]
+    array_lengths = [0, 8, 0]
+    crc_extra = 22
+    unpacker = struct.Struct("<B8BB")
+    instance_field = None
+    instance_offset = -1
+
+    def __init__(self, raw_status, raw_threads, processed_status):
+        MAVLink_message.__init__(self, MAVLink_sense_camera_state_message.id, MAVLink_sense_camera_state_message.name)
+        self._fieldnames = MAVLink_sense_camera_state_message.fieldnames
+        self._instance_field = MAVLink_sense_camera_state_message.instance_field
+        self._instance_offset = MAVLink_sense_camera_state_message.instance_offset
+        self.raw_status = raw_status
+        self.raw_threads = raw_threads
+        self.processed_status = processed_status
+
+    def pack(self, mav, force_mavlink1=False):
+        return MAVLink_message.pack(self, mav, 22, struct.pack("<B8BB", self.raw_status, self.raw_threads[0], self.raw_threads[1], self.raw_threads[2], self.raw_threads[3], self.raw_threads[4], self.raw_threads[5], self.raw_threads[6], self.raw_threads[7], self.processed_status), force_mavlink1=force_mavlink1)
+
+
+class MAVLink_sense_air_state_message(MAVLink_message):
+    """
+    State of Sense's running services (updated at 1Hz).
+    """
+
+    id = MAVLINK_MSG_ID_SENSE_AIR_STATE
+    name = "SENSE_AIR_STATE"
+    fieldnames = ["raw_status", "raw_threads", "processed_status"]
+    ordered_fieldnames = ["raw_status", "raw_threads", "processed_status"]
+    fieldtypes = ["uint8_t", "uint8_t", "uint8_t"]
+    fielddisplays_by_name = {}
+    fieldenums_by_name = {"raw_status": "RAW_STATUS_MODULE", "raw_threads": "RAW_STATUS_MODULE", "processed_status": "RAW_STATUS_MODULE"}
+    fieldunits_by_name = {}
+    format = "<B8BB"
+    native_format = bytearray("<BBB", "ascii")
+    orders = [0, 1, 2]
+    lengths = [1, 8, 1]
+    array_lengths = [0, 8, 0]
+    crc_extra = 72
+    unpacker = struct.Struct("<B8BB")
+    instance_field = None
+    instance_offset = -1
+
+    def __init__(self, raw_status, raw_threads, processed_status):
+        MAVLink_message.__init__(self, MAVLink_sense_air_state_message.id, MAVLink_sense_air_state_message.name)
+        self._fieldnames = MAVLink_sense_air_state_message.fieldnames
+        self._instance_field = MAVLink_sense_air_state_message.instance_field
+        self._instance_offset = MAVLink_sense_air_state_message.instance_offset
+        self.raw_status = raw_status
+        self.raw_threads = raw_threads
+        self.processed_status = processed_status
+
+    def pack(self, mav, force_mavlink1=False):
+        return MAVLink_message.pack(self, mav, 72, struct.pack("<B8BB", self.raw_status, self.raw_threads[0], self.raw_threads[1], self.raw_threads[2], self.raw_threads[3], self.raw_threads[4], self.raw_threads[5], self.raw_threads[6], self.raw_threads[7], self.processed_status), force_mavlink1=force_mavlink1)
 
 
 class MAVLink_sense_time_message(MAVLink_message):
@@ -19413,6 +19502,8 @@ mavlink_map = {
     MAVLINK_MSG_ID_SENSE_HEARTBEAT: MAVLink_sense_heartbeat_message,
     MAVLINK_MSG_ID_SENSE_PIPELINE_HEARTBEAT: MAVLink_sense_pipeline_heartbeat_message,
     MAVLINK_MSG_ID_SENSE_THREADS_HEARTBEAT: MAVLink_sense_threads_heartbeat_message,
+    MAVLINK_MSG_ID_SENSE_CAMERA_STATE: MAVLink_sense_camera_state_message,
+    MAVLINK_MSG_ID_SENSE_AIR_STATE: MAVLink_sense_air_state_message,
     MAVLINK_MSG_ID_SENSE_TIME: MAVLink_sense_time_message,
     MAVLINK_MSG_ID_SENSE_AR: MAVLink_sense_ar_message,
     MAVLINK_MSG_ID_SENSE_DAA: MAVLink_sense_daa_message,
@@ -20147,7 +20238,7 @@ class MAVLink(object):
     def sense_heartbeat_encode(self, status):
         """
         Sense Heartbeat message reporting service components' status (updated
-        at 1Hz)
+        at 1Hz).
 
         status                    : See Sense-ICD DAA status packet. (type:uint32_t)
 
@@ -20157,7 +20248,7 @@ class MAVLink(object):
     def sense_heartbeat_send(self, status, force_mavlink1=False):
         """
         Sense Heartbeat message reporting service components' status (updated
-        at 1Hz)
+        at 1Hz).
 
         status                    : See Sense-ICD DAA status packet. (type:uint32_t)
 
@@ -20166,7 +20257,7 @@ class MAVLink(object):
 
     def sense_pipeline_heartbeat_encode(self, status):
         """
-        Pipeline heartbeat with health report (updated at 1Hz)
+        Pipeline heartbeat with health report (updated at 1Hz).
 
         status                    : See the SENSE_STATE enum. (type:uint8_t, values:PIPELINE_STATE)
 
@@ -20175,7 +20266,7 @@ class MAVLink(object):
 
     def sense_pipeline_heartbeat_send(self, status, force_mavlink1=False):
         """
-        Pipeline heartbeat with health report (updated at 1Hz)
+        Pipeline heartbeat with health report (updated at 1Hz).
 
         status                    : See the SENSE_STATE enum. (type:uint8_t, values:PIPELINE_STATE)
 
@@ -20184,7 +20275,7 @@ class MAVLink(object):
 
     def sense_threads_heartbeat_encode(self, status):
         """
-        Threads heartbeat with health report (updated at 1Hz)
+        Threads heartbeat with health report (updated at 1Hz).
 
         status                    : Array defining each thread status. (type:uint8_t, values:COMPONENT_STATE)
 
@@ -20193,12 +20284,56 @@ class MAVLink(object):
 
     def sense_threads_heartbeat_send(self, status, force_mavlink1=False):
         """
-        Threads heartbeat with health report (updated at 1Hz)
+        Threads heartbeat with health report (updated at 1Hz).
 
         status                    : Array defining each thread status. (type:uint8_t, values:COMPONENT_STATE)
 
         """
         return self.send(self.sense_threads_heartbeat_encode(status), force_mavlink1=force_mavlink1)
+
+    def sense_camera_state_encode(self, raw_status, raw_threads, processed_status):
+        """
+        State of Sense's running services (updated at 1Hz).
+
+        raw_status                : Array defining each thread status. (type:uint8_t, values:RAW_STATUS_MODULE)
+        raw_threads               : Array defining each thread status. (type:uint8_t, values:RAW_STATUS_MODULE)
+        processed_status          : Array defining each thread status. (type:uint8_t, values:RAW_STATUS_MODULE)
+
+        """
+        return MAVLink_sense_camera_state_message(raw_status, raw_threads, processed_status)
+
+    def sense_camera_state_send(self, raw_status, raw_threads, processed_status, force_mavlink1=False):
+        """
+        State of Sense's running services (updated at 1Hz).
+
+        raw_status                : Array defining each thread status. (type:uint8_t, values:RAW_STATUS_MODULE)
+        raw_threads               : Array defining each thread status. (type:uint8_t, values:RAW_STATUS_MODULE)
+        processed_status          : Array defining each thread status. (type:uint8_t, values:RAW_STATUS_MODULE)
+
+        """
+        return self.send(self.sense_camera_state_encode(raw_status, raw_threads, processed_status), force_mavlink1=force_mavlink1)
+
+    def sense_air_state_encode(self, raw_status, raw_threads, processed_status):
+        """
+        State of Sense's running services (updated at 1Hz).
+
+        raw_status                : Array defining each thread status. (type:uint8_t, values:RAW_STATUS_MODULE)
+        raw_threads               : Array defining each thread status. (type:uint8_t, values:RAW_STATUS_MODULE)
+        processed_status          : Array defining each thread status. (type:uint8_t, values:RAW_STATUS_MODULE)
+
+        """
+        return MAVLink_sense_air_state_message(raw_status, raw_threads, processed_status)
+
+    def sense_air_state_send(self, raw_status, raw_threads, processed_status, force_mavlink1=False):
+        """
+        State of Sense's running services (updated at 1Hz).
+
+        raw_status                : Array defining each thread status. (type:uint8_t, values:RAW_STATUS_MODULE)
+        raw_threads               : Array defining each thread status. (type:uint8_t, values:RAW_STATUS_MODULE)
+        processed_status          : Array defining each thread status. (type:uint8_t, values:RAW_STATUS_MODULE)
+
+        """
+        return self.send(self.sense_air_state_encode(raw_status, raw_threads, processed_status), force_mavlink1=force_mavlink1)
 
     def sense_time_encode(self, time_unix_usec, status):
         """
